@@ -7,6 +7,7 @@ import com.aluracursos.forohub.enumerador.Categoria;
 import com.aluracursos.forohub.model.Topico;
 import com.aluracursos.forohub.repository.ITopicoRepository;
 import com.aluracursos.forohub.service.TopicoService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -31,6 +32,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("/topico")
+@SecurityRequirement(name = "bearer-key")
 public class TopicoController {
 
     @Autowired

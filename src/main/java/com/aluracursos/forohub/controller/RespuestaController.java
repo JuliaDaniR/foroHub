@@ -5,6 +5,7 @@ import com.aluracursos.forohub.DTO.DatosRespuestaRespuestas;
 import com.aluracursos.forohub.model.Respuesta;
 import com.aluracursos.forohub.repository.IRespuestaRepository;
 import com.aluracursos.forohub.service.RespuestaService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -28,6 +29,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("/respuesta")
+@SecurityRequirement(name = "bearer-key")
 public class RespuestaController {
 
     @Autowired

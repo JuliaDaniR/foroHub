@@ -3,6 +3,7 @@ package com.aluracursos.forohub.controller;
 import com.aluracursos.forohub.DTO.DatosRegistroCurso;
 import com.aluracursos.forohub.model.Curso;
 import com.aluracursos.forohub.service.CursoService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import java.net.URI;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("/curso")
+@SecurityRequirement(name = "bearer-key")
 public class CursoController {
     
     @Autowired

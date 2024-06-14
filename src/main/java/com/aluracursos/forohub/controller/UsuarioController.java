@@ -1,8 +1,10 @@
 package com.aluracursos.forohub.controller;
 
 import com.aluracursos.forohub.DTO.DatosRegistroUsuario;
+import com.aluracursos.forohub.DTO.DatosRespuestaUsuario;
 import com.aluracursos.forohub.model.Usuario;
 import com.aluracursos.forohub.service.UsuarioService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import java.net.URI;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("/usuario")
+@SecurityRequirement(name = "bearer-key")
 public class UsuarioController {
     
     @Autowired
@@ -25,10 +28,9 @@ public class UsuarioController {
         
         Usuario usuario = usuarioService.registrarUsuario(datosRegistroUsuario);
     
-        DatosRegistroUsuario datosRegistroUsuario1 = new DatosRegistroUsuario(
+        DatosRespuestaUsuario datosRegistroUsuario1 = new DatosRespuestaUsuario(
                 usuario.getNombre(),
                 usuario.getCorreoElectronico(),
-                usuario.getPassword(), 
                 usuario.getPerfil());
         
         URI url = uriComponentsBuilder.path("/usuario/{id}").buildAndExpand(usuario.getId()).toUri();
