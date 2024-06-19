@@ -38,9 +38,27 @@ public class RespuestaService {
         Respuesta respuesta = new Respuesta(datosRegistroRespuesta, autor, topico);
         return respuestaRepo.save(respuesta);
     }
-    
+
     public Page<Respuesta> getRespuestasPorTopico(Long topicoId, Pageable pageable) {
         return respuestaRepo.findByTopicoId(topicoId, pageable);
+    }
+
+    public void marcarRespuestaComoSolucion(Long idRespuesta) {
+        Respuesta respuesta = respuestaRepo.findById(idRespuesta)
+                .orElseThrow(() -> new RuntimeException("Respuesta no encontrada para el ID: " + idRespuesta));
+
+        respuesta.darRespuestaComoSolucion();
+
+        respuestaRepo.save(respuesta); 
+    }
+
+    public void desmarcarRespuestaComoSolucion(Long idRespuesta) {
+       Respuesta respuesta = respuestaRepo.findById(idRespuesta)
+                .orElseThrow(() -> new RuntimeException("Respuesta no encontrada para el ID: " + idRespuesta));
+
+        respuesta.desmarcarRespuestaComoSolucion();
+
+        respuestaRepo.save(respuesta); 
     }
 
 }

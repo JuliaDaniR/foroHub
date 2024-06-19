@@ -1,7 +1,9 @@
 package com.aluracursos.forohub.service;
 
 import com.aluracursos.forohub.DTO.DatosRegistroTopico;
+import com.aluracursos.forohub.enumerador.Categoria;
 import com.aluracursos.forohub.model.Curso;
+import com.aluracursos.forohub.model.Respuesta;
 import com.aluracursos.forohub.model.Topico;
 import com.aluracursos.forohub.model.Usuario;
 import com.aluracursos.forohub.repository.ICursoRepository;
@@ -9,7 +11,11 @@ import com.aluracursos.forohub.repository.ITopicoRepository;
 import com.aluracursos.forohub.repository.IUsuarioRepository;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -49,5 +55,45 @@ public class TopicoService {
         Topico nuevoTopico = new Topico(datosRegistroTopico, autor, curso);
         return topicoRepository.save(nuevoTopico);
     }
- 
+
+    private static final Logger logger = LoggerFactory.getLogger(TopicoService.class);
+
+    public List<Topico> buscarPorCategoriaYSubcategoria(Categoria categoria, String subcategoria) {
+        logger.info("Buscando temas para categoría {} y subcategoría {}", categoria, subcategoria);
+        // Aquí va la lógica para buscar los temas
+        List<Topico> temas = topicoRepository.findByCategoriaAndSubcategoria(categoria, subcategoria);
+        logger.info("Encontrados {} temas para categoría {} y subcategoría {}", temas.size(), categoria, subcategoria);
+        return temas;
+    }
+
+    public Boolean tieneRespuestaComoSolucion(Topico get) {
+        Topico topico = topicoRepository.getReferenceById(get.getId());
+        Boolean resultado = false;
+        for (Respuesta respuesta : topico.getRespuestas()) {
+            if (respuesta.getSolucion().equals(Boolean.TRUE)) {
+                resultado = true;
+            }
+        }
+        return resultado;
+    }
+
+    public Boolean perteneceAlUsuario(Topico topico) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+         System.out.println("*************" + authentication);
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false; // Si no hay autenticación, no pertenece al usuario en sesión
+           
+        }
+
+        String nombreUsuarioAutenticado = authentication.getName();
+        // Comparar el nombre del usuario autenticado con el nombre del autor del tópico
+         System.out.println("*************Nombre " + nombreUsuarioAutenticado);
+         System.out.println("resultado "+ topico.getAutor().getUsername().equals(nombreUsuarioAutenticado));
+        return topico.getAutor().getUsername().equals(nombreUsuarioAutenticado);
+    }
+
+    public Topico obtenerTopicoPorId(Long id) {
+      Topico topico = topicoRepository.findById(id).get();
+      return topico;
+    }
 }

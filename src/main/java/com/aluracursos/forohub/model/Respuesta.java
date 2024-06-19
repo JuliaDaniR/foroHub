@@ -73,4 +73,8 @@ public class Respuesta {
         this.status = false;
     }
 
+    public void desmarcarRespuestaComoSolucion() {
+        this.solucion = false;
+    }
+
 }

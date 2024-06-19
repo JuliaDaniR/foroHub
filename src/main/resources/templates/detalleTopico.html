@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Detalles del Tópico</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+        <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900&display=swap" rel="stylesheet">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    </head>
+    <body>
+        <div class="navbar">
+            <a href="#" class="logo"><i class="fas fa-comments"></i>ForoTech</a>
+            <div class="menu-icon" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="items" id="navbarLinks">
+                <a th:href="@{/login}" id="loginLink">Login</a>
+                <a th:href="@{/registrar}" id="registerLink">Registrar</a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="container">
+            <div class="content-detalle">
+                <h1 th:text="${topico.titulo}">Título del Tópico</h1>
+                <p th:text="${topico.mensaje}">Mensaje del tópico</p>
+                <p>Usuario: <span th:text="${topico.autor?.nombre}">Anónimo</span></p>
+                <!--<img th:src="@{${topico.autor?.imagenUrl}}" alt="Imagen del usuario" th:if="${topico.autor != null}"/>-->
+                <p>Fecha de Creación: <span th:text="${fechaFormateada}"></span></p>
+                <p>Categoria: <span th:text="${topico.curso.categoriaPrincipal.descripcion}"></span></p>
+                <p>SubCategoria: <span th:text="${topico.curso.subcategoria}"></span></p>
+                <h2 style="border-top: 6px double black; padding-top: 3rem">Respuestas</h2>
+                <div th:if="${topico.respuestas.size() > 0}">
+                    <ul>
+                        <li th:each="respuesta : ${topico.respuestas}" class="lista-respuestas">
+                            <p th:text="${respuesta.mensaje}" style="background: #07273f91;color: wheat;padding: 1rem;text-align: center;border-radius: 20px;"></p>
+                            <p>Usuario: <span th:text="${respuesta.autor?.nombre}">Anónimo</span></p>
+                            <p>Fecha: <span th:text="${#temporals.format(respuesta.fechaCreacion, 'dd-MM-yyyy')}"></span></p>
+
+                            <!-- Botón para marcar como solución si no está marcada y el usuario es el autor del tópico -->
+                            <button th:if="${!respuesta.solucion && perteneceAlUsuario}" th:id="'btn-marcar-' + ${respuesta.id}"
+                                    th:onclick="'marcarSolucion(' + ${respuesta.id} + ');'">Marcar como solución</button>
+
+                            <!-- Mensaje de "Solución marcada" si está marcada -->
+                            <span th:if="${respuesta.solucion}" th:id="'span-solucion-' + ${respuesta.id}">
+                                Solución marcada
+                                <!-- Botón para desmarcar como solución si el usuario es el autor del tópico -->
+                                <button th:if="${perteneceAlUsuario}" th:id="'btn-desmarcar-' + ${respuesta.id}"
+                                        th:onclick="'desmarcarSolucion(' + ${respuesta.id} + ');'">Desmarcar</button>
+                            </span>
+
+                        </li>
+                    </ul>
+                </div>
+                <p th:if="${topico.respuestas.size() == 0}">No hay respuestas para este tópico.</p>
+                <form style="margin-top: 3rem" id="formNuevaRespuesta" th:action="@{/respuesta/registrar}" method="post">
+                    <h3 class="h3-respuesta">Responde este tópico</h3>
+                    <textarea style="font-size: 1.2rem; font-weight: bold" name="mensaje" rows="10" cols="80" placeholder="Escribe tu respuesta aquí"></textarea><br>
+                    <button class="btn-respuesta" type="submit">Enviar</button>
+                </form>
+            </div>
+        </div>
+        <footer>
+            <p>&copy; 2024 ForoTech. Todos los derechos reservados.</p>
+        </footer>
+        <script th:inline="javascript">
+            var tokenJWT = localStorage.getItem('tokenJWT');
+
+            function toggleMenu() {
+                var navbarLinks = document.getElementById("navbarLinks");
+                navbarLinks.classList.toggle("active");
+                if (window.innerWidth > 768) {
+                    navbarLinks.classList.remove("active");
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                toggleMenu();
+
+                // Realizar una solicitud GET por ejemplo, adjuntando el token JWT en el encabezado Authorization
+                fetch('/mostrarTopico', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + tokenJWT
+                    }
+                })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Error en la autenticación');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log(data); // Manejar la respuesta del backend
+                            var navbarLinks = document.getElementById('navbarLinks');
+                            var nombreUsuario = document.createElement('span');
+                            nombreUsuario.textContent = 'Bienvenido, ' + data.username;
+                            nombreUsuario.className = 'usuario-autenticado';
+                            navbarLinks.innerHTML = ''; // Limpiar contenido existente
+                            navbarLinks.appendChild(nombreUsuario);
+
+                            // Agregar enlace de logout
+                            var logoutLink = document.createElement('a');
+                            logoutLink.href = '/logout';
+                            logoutLink.textContent = 'Logout';
+                            navbarLinks.appendChild(logoutLink);
+                        })
+                        .catch(error => {
+                            console.error('Error al hacer la solicitud:', error);
+                        });
+            });
+
+            function marcarSolucion(idRespuesta) {
+                fetch('/respuesta/marcarSolucion/' + idRespuesta, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + tokenJWT
+                    }
+                })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Error al marcar la respuesta como solución');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('Respuesta marcada como solución:', data);
+                            actualizarInterfazUsuario(idRespuesta, true);
+                            window.location.reload();
+                        })
+                        .catch(error => {
+                            console.error('Error al marcar la respuesta como solución:', error);
+                        });
+            }
+
+            function desmarcarSolucion(idRespuesta) {
+                fetch('/respuesta/desmarcarSolucion/' + idRespuesta, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + tokenJWT
+                    }
+                })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Error al desmarcar la respuesta como solución');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('Respuesta desmarcada como solución:', data);
+                            actualizarInterfazUsuario(idRespuesta, false);
+                            window.location.reload();
+                        })
+                        .catch(error => {
+                            console.error('Error al desmarcar la respuesta como solución:', error);
+                        });
+            }
+
+            function actualizarInterfazUsuario(idRespuesta, esSolucion) {
+                var botonMarcar = document.getElementById(`btn-marcar-${idRespuesta}`);
+                var spanSolucion = document.getElementById(`span-solucion-${idRespuesta}`);
+                var botonDesmarcar = document.getElementById(`btn-desmarcar-${idRespuesta}`);
+
+                if (esSolucion) {
+                    if (botonMarcar)
+                        botonMarcar.style.display = 'none';
+                    if (spanSolucion) {
+                        spanSolucion.style.display = 'inline';
+                        if (botonDesmarcar)
+                            botonDesmarcar.style.display = 'inline';
+                    }
+                } else {
+                    if (botonMarcar)
+                        botonMarcar.style.display = 'inline';
+                    if (spanSolucion) {
+                        spanSolucion.style.display = 'none';
+                        if (botonDesmarcar)
+                            botonDesmarcar.style.display = 'none';
+                    }
+                }
+            }
+
+            $(document).ready(function () {
+                $.ajaxSetup({
+                    beforeSend: function (xhr) {
+                        addJWTHeader(xhr);
+                    }
+                });
+            });
+
+            function addJWTHeader(xhr) {
+                var tokenJWT = localStorage.getItem('tokenJWT');
+                if (tokenJWT) {
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + tokenJWT);
+                }
+            }
+        </script>
+
+    </body>
+</html>

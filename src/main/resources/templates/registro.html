@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Foro de Tecnología - Registro</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+        <link rel="stylesheet" th:href="@{/css/styles.css}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900&display=swap" rel="stylesheet" />
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    </head>
+    <body>
+        <!-- Navbar -->
+        <div class="navbar">
+            <a href="#" class="logo"><i class="fas fa-comments"></i> ForoTech</a>
+            <div class="menu-icon" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="items" id="navbarLinks">
+                <a th:href="@{/login}" id="loginLink">Login</a>
+                <a th:href="@{/registrar}" id="registerLink">Registrar</a>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <header>
+            <div class="container">
+                <h1>Bienvenido al Foro de Tecnología</h1>
+                <p>Discute y comparte conocimientos sobre las últimas tendencias en tecnología.</p>
+            </div>
+        </header>
+
+        <!-- Sección de Registro -->
+        <section class="container-login">
+            <div class="wrapper">
+                <span class="bg-animate-registro"></span>
+                <div class="form-box-registro login">
+                    <h2>Registrar nuevo Usuario</h2>
+                    <p>Ingrese tus datos para poder participar de nuestro foro</p>
+                </div>
+                <div class="info-text login">
+                    <form class="m-5" th:action="@{/usuario/registrar}" method="POST" enctype="application/x-www-form-urlencoded">
+                        <!-- Campos del formulario -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="nombre" class="form-label">Nombre</label>
+                                <input 
+                                    style="padding: .3rem; margin-top: 1rem;background-color: #ffffff79; border-radius: 10px;"
+                                    type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="exampleInputEmail1" class="form-label">E-mail</label>
+                                <input 
+                                    style="padding: .3rem; margin-top: 1rem;background-color: #ffffff79; border-radius: 10px;"
+                                    type="email" class="form-control" id="exampleInputEmail1" name="email" placeholder="E-mail" required />
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="password1" class="form-label">Password</label>
+                                <input 
+                                    style="padding: .3rem; margin-top: 1rem;background-color: #ffffff79; border-radius: 10px;"
+                                    type="password" class="form-control" id="password1" name="password" placeholder="Ingresa la Contraseña" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="rol" class="form-label">Elige tu perfil</label>
+                                <select
+                                    style="padding: .3rem; margin-top: 1rem;background-color: #ffffff79; border-radius: 10px;"
+                                    id="rol" class="form-select" name="perfil" required>
+                                    <option value="">Perfiles</option>
+                                    <option value="MODERADOR">Moderador</option>
+                                    <option value="ESTUDIANTE">Estudiante</option>
+                                    <option value="INSTRUCTOR">Instructor</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Registrar</button>
+                    </form>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2024 ForoTech. Todos los derechos reservados.</p>
+        </footer>
+        <script>
+            function toggleMenu() {
+                var navbarLinks = document.getElementById("navbarLinks");
+                navbarLinks.classList.toggle("active");
+            }
+
+            document.querySelector("#registroForm").addEventListener("submit", function (event) {
+                event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+
+                var correoElectronico = document.querySelector("input[name='correoElectronico']").value;
+                var password = document.querySelector("input[name='password']").value;
+
+                var datosUsuario = {
+                    correoElectronico: correoElectronico,
+                    password: password
+                };
+
+                fetch('/usuario/registrar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datosUsuario)
+                })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Error en el registro');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Guardar el token JWT y el nombre del usuario en localStorage
+                            localStorage.setItem('tokenJWT', data.jwtToken);
+                            localStorage.setItem('nombreUsuario', data.nombreUsuario);
+
+                            // Actualizar el navbar
+                            actualizarNavbar();
+
+                            // Redirigir al index
+                            window.location.href = '/'; // redirige al index o a donde sea necesario
+                        })
+                        .catch(error => {
+                            console.error('Error al registrar:', error);
+                            // Manejar el error adecuadamente, por ejemplo, mostrar un mensaje al usuario
+                        });
+            });
+
+            function actualizarNavbar() {
+                var nombreUsuario = localStorage.getItem('nombreUsuario');
+
+                if (nombreUsuario) {
+                    document.getElementById('navbarLinks').innerHTML = `
+                    <span>Bienvenido, ${nombreUsuario}</span>
+                    <a href="#" onclick="logout()">Logout</a>
+                `;
+                }
+            }
+
+            function logout() {
+                localStorage.removeItem('tokenJWT');
+                localStorage.removeItem('nombreUsuario');
+                window.location.href = '/';
+            }
+
+            // Llama a actualizarNavbar() al cargar la página para verificar si el usuario está autenticado
+            document.addEventListener('DOMContentLoaded', actualizarNavbar);
+
+            // Función para agregar el token JWT en el encabezado de todas las solicitudes AJAX
+            function addJWTHeader(xhr) {
+                var tokenJWT = localStorage.getItem('tokenJWT'); // Obtener el token JWT desde localStorage
+                if (tokenJWT) {
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + tokenJWT);
+                }
+            }
+
+            // Interceptor para agregar el token JWT en todas las solicitudes
+            $(document).ready(function () {
+                $.ajaxSetup({
+                    beforeSend: function (xhr) {
+                        addJWTHeader(xhr);
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>

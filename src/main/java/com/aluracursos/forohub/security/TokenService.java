@@ -5,47 +5,61 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.aluracursos.forohub.model.Usuario;
+import com.auth0.jwt.JWTVerifier;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public class TokenService {
 
-    @Value("api.security.secret")
+    @Value("${api.security.secret}")
     private String apiSecret;
 
     public String generarToken(Usuario usuario) {
         try {
-            var algoritmo = Algorithm.HMAC256(apiSecret);
+            Algorithm algorithm = Algorithm.HMAC256(apiSecret);
             return JWT.create()
-                    .withIssuer("API Voll.med")
+                    .withIssuer("API ForoHub")
                     .withSubject(usuario.getCorreoElectronico())
                     .withExpiresAt(fechaExpiracion())
-                    .sign(algoritmo);
+                    .sign(algorithm);
         } catch (JWTCreationException exception) {
-            throw new RuntimeException("error al generar token jwt", exception);
+            throw new RuntimeException("Error al generar token JWT", exception);
+        }
+    }
+
+    public boolean isValidToken(String tokenJWT) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(apiSecret);
+            JWTVerifier verifier = JWT.require(algorithm)
+                    .withIssuer("API ForoHub")
+                    .build();
+            verifier.verify(tokenJWT);
+            return true;
+        } catch (JWTVerificationException | IllegalArgumentException exception) {
+            return false;
         }
     }
 
     public String getSubject(String tokenJWT) {
+        
+        System.out.println("**********tokenJWT********** " + tokenJWT);
         try {
-            var algoritmo = Algorithm.HMAC256(apiSecret);
-            return JWT.require(algoritmo)
-                    .withIssuer("API Voll.med")
+            Algorithm algorithm = Algorithm.HMAC256(apiSecret);
+            return JWT.require(algorithm)
+                    .withIssuer("API ForoHub")
                     .build()
                     .verify(tokenJWT)
                     .getSubject();
         } catch (JWTVerificationException exception) {
-            throw new RuntimeException("Token JWT inválido o expirado!");
+            throw new RuntimeException("Token JWT inválido o expirado");
         }
     }
 
     private Instant fechaExpiracion() {
-        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
+        return LocalDateTime.now().plusMinutes(30).toInstant(ZoneOffset.of("-03:00"));
     }
 }
-
