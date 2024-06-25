@@ -38,7 +38,7 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.POST, "/usuario/registrar").permitAll() // Permitir registro de usuarios
                 .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**").permitAll() // Permitir acceso a Swagger
                 .requestMatchers("/detalleTopico/**").authenticated()
-                .requestMatchers("/buscarTopicos/**").authenticated()
+                .requestMatchers("/buscarTopicos/**").authenticated()// Requerir autenticación para detalle de tópicos
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class) // Añadir filtro de seguridad personalizado

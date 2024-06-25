@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!--<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
     <head>
         <meta charset="UTF-8" />
@@ -12,7 +12,7 @@
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     </head>
     <body>
-        <!-- Navbar -->
+         Navbar 
         <div class="navbar">
             <a href="#" class="logo"><i class="fas fa-comments"></i> ForoTech</a>
             <div class="menu-icon" onclick="toggleMenu()">
@@ -24,7 +24,7 @@
             </div>
         </div>
 
-        <!-- Header -->
+         Header 
         <header>
             <div class="container">
                 <h1>Bienvenido al Foro de Tecnología</h1>
@@ -35,7 +35,7 @@
             <h2 style="text-align: center; color: darkblue">Tienes que loguearte para poder participar de nuestro foro</h2>
         </div>
         <section class="container-login">
-
+           
             <div class="wrapper">
                 <span class="bg-animate"></span>
                 <div class="form-box login">
@@ -64,60 +64,56 @@
             </div>
         </section>
 
-        <!-- Footer -->
+         Footer 
         <footer>
             <p>&copy; 2024 ForoTech. Todos los derechos reservados.</p>
         </footer>
+
         <script>
             function toggleMenu() {
                 var navbarLinks = document.getElementById("navbarLinks");
                 navbarLinks.classList.toggle("active");
             }
 
-            document.addEventListener('DOMContentLoaded', function () {
-                document.querySelector("form").addEventListener("submit", function (event) {
-                    event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+            document.querySelector("form").addEventListener("submit", function (event) {
+                event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
 
-                    var correoElectronico = document.querySelector("input[name='correoElectronico']").value;
-                    var password = document.querySelector("input[name='password']").value;
+                var correoElectronico = document.querySelector("input[name='correoElectronico']").value;
+                var password = document.querySelector("input[name='password']").value;
 
-                    var datosUsuario = {
-                        correoElectronico: correoElectronico,
-                        password: password
-                    };
+                var datosUsuario = {
+                    correoElectronico: correoElectronico,
+                    password: password
+                };
 
-                    fetch('/login', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(datosUsuario)
-                    })
-                            .then(response => {
-                                if (!response.ok) {
-                                    throw new Error('Error en la autenticación');
-                                }
-                                return response.json();
-                            })
-                            .then(data => {
-                                // Guardar el token JWT y el nombre del usuario en localStorage
-                                localStorage.setItem('tokenJWT', data.jwtToken);
-                                localStorage.setItem('nombreUsuario', data.nombreUsuario);
+                fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datosUsuario)
+                })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Error en la autenticación');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Guardar el token JWT y el nombre del usuario en localStorage
+                            localStorage.setItem('tokenJWT', data.jwtToken);
+                            localStorage.setItem('nombreUsuario', data.nombreUsuario);
 
-                                // Actualizar el navbar
-                                actualizarNavbar();
+                            // Actualizar el navbar
+                            actualizarNavbar();
 
-                                // Redirigir al index
-                                window.location.href = '/'; // redirige al index o a donde sea necesario
-                            })
-                            .catch(error => {
-                                console.error('Error al iniciar sesión:', error);
-                                // Manejar el error adecuadamente, por ejemplo, mostrar un mensaje al usuario
-                            });
-                });
-
-                // Llama a actualizarNavbar() al cargar la página para verificar si el usuario está autenticado
-                actualizarNavbar();
+                            // Redirigir al index
+                            window.location.href = '/'; // redirige al index o a donde sea necesario
+                        })
+                        .catch(error => {
+                            console.error('Error al iniciar sesión:', error);
+                            // Manejar el error adecuadamente, por ejemplo, mostrar un mensaje al usuario
+                        });
             });
 
             function actualizarNavbar() {
@@ -125,9 +121,9 @@
 
                 if (nombreUsuario) {
                     document.getElementById('navbarLinks').innerHTML = `
-                         <span>Bienvenido, ${nombreUsuario}</span>
-                         <a href="#" onclick="logout()">Logout</a>
-                     `;
+                    <span>Bienvenido, ${nombreUsuario}</span>
+                    <a href="#" onclick="logout()">Logout</a>
+                `;
                 }
             }
 
@@ -137,24 +133,25 @@
                 window.location.href = '/';
             }
 
-            // Interceptor para agregar el token JWT en todas las solicitudes fetch
-            function agregarTokenARequest(init) {
-                var tokenJWT = localStorage.getItem('tokenJWT');
+            // Llama a actualizarNavbar() al cargar la página para verificar si el usuario está autenticado
+            document.addEventListener('DOMContentLoaded', actualizarNavbar);
+
+            // Función para agregar el token JWT en el encabezado de todas las solicitudes AJAX
+            function addJWTHeader(xhr) {
+                var tokenJWT = localStorage.getItem('tokenJWT'); // Obtener el token JWT desde localStorage
                 if (tokenJWT) {
-                    if (!init.headers) {
-                        init.headers = {};
-                    }
-                    init.headers['Authorization'] = 'Bearer ' + tokenJWT;
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + tokenJWT);
                 }
-                return init;
             }
 
-            // Sobrescribir la función fetch para incluir el token JWT en las solicitudes
-            var originalFetch = fetch;
-            window.fetch = function (input, init) {
-                init = agregarTokenARequest(init || {});
-                return originalFetch(input, init);
-            };
+            // Interceptor para agregar el token JWT en todas las solicitudes
+            $(document).ready(function () {
+                $.ajaxSetup({
+                    beforeSend: function (xhr) {
+                        addJWTHeader(xhr);
+                    }
+                });
+            });
         </script>
     </body>
-</html>
+</html>-->

@@ -62,6 +62,58 @@
                 </li>
             </ul>
         </div>
+        <div style="display: flex">
+            <div class="temas" style="width: 100%; justify-content: center; display: flex;flex-direction: column; align-items: center;">
+                <h2 style="color: black">Registrar nuevo Tópico</h2>
+                <div class="tema"  style="width: 80%">
+                    <form id="formNuevoTopico" style="width: 100%; font-size: 1.5rem">
+                        <label for="titulo" style="width: 100%; line-height: 2rem">Título:</label><br>
+                        <input type="text" id="titulo" name="titulo" required style="width: 100%; padding: 1rem 0;"><br>
+
+                        <label for="mensaje" style="width: 100%; line-height: 2rem">Mensaje:</label><br>
+                        <textarea id="mensaje" name="mensaje" rows="5" required style="width: 100%; line-height: 2rem"></textarea><br>
+
+                        <label for="cursoId" style="width: 100%; line-height: 2rem">Curso:</label><br>
+                        <select id="cursoId" name="cursoId" required style="width: 100%; line-height: 2rem; padding: 1rem 0;">
+                            <option value="">Selecciona un curso</option>
+                             Aquí se pueden iterar los cursos disponibles desde el modelo 
+                            <option th:each="curso : ${cursos}" th:value="${curso.id}" th:text="${curso.nombre}"></option>
+                        </select><br>
+
+                        <button type="submit" class="subcategoria-btn" style="width: 80%">Registrar Tópico</button>
+                    </form>
+                </div>
+            </div>
+            <div class="temas" style="width: 100%; justify-content: center; display: flex; flex-direction: column; align-items: center;">
+                <div th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'') or hasRole(''ROLE_INSTRUCTOR'')')}">
+                    <h2>Registro de Curso</h2>
+                    <div class="tema" style="width: 80%">
+                        <form onsubmit="registrarCurso(event)">
+                            <label for="nombre">Nombre del Curso:</label>
+                            <input type="text" id="nombre" name="nombre" required>
+                            <br><br>
+
+                            <label for="categoria">Categoría:</label>
+                            <select id="categoria" name="categoriaPrincipal" required onchange="actualizarSubcategorias()">
+                                <option value="">Seleccione una categoría</option>
+                                <option th:each="categoria : ${categorias}" th:value="${categoria.name()}" th:text="${categoria.descripcion}"></option>
+                            </select>
+                            <br><br>
+
+                            <label for="subcategoria">Subcategoría:</label>
+                            <select id="subcategoria" name="subcategoria" required>
+                                <option value="">Seleccione una subcategoría</option>
+                            </select>
+                            <br><br>
+
+                            <button type="submit">Registrar Curso</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+
+
         </div>
         <div id="contenedor-temas" class="temas" th:if="${topicos != null}">
             <h2>Temas Relacionados</h2>
@@ -110,7 +162,102 @@
                 subcategorias.style.display = subcategorias.style.display === 'none' ? 'block' : 'none';
                 console.log('Subcategorías de ' + categoria + ' mostradas/ocultadas');
             }
-      
+            document.addEventListener("DOMContentLoaded", function () {
+                actualizarSubcategorias();
+            });
+
+            function actualizarSubcategorias() {
+                var categoriaSeleccionada = document.getElementById('categoria').value;
+                var subcategoriasPorCategoria = /*[[${subcategoriasPorCategoria}]]*/ {};
+                console.log("Categoría seleccionada:", categoriaSeleccionada);
+                console.log("Subcategorías por categoría:", subcategoriasPorCategoria);
+
+                var subcategorias = subcategoriasPorCategoria[categoriaSeleccionada];
+                var subcategoriaSelect = document.getElementById('subcategoria');
+                subcategoriaSelect.innerHTML = ''; // Limpiar opciones actuales
+
+                if (subcategorias) {
+                    subcategorias.forEach(function (subcategoria) {
+                        var option = document.createElement('option');
+                        option.value = subcategoria;
+                        option.text = subcategoria;
+                        subcategoriaSelect.appendChild(option);
+                    });
+                } else {
+                    console.log("Categoría no encontrada o subcategoriasPorCategoria es nulo:", categoriaSeleccionada);
+                }
+            }
+            
+            
+
+            function registrarCurso(event) {
+                event.preventDefault();
+
+                var token = localStorage.getItem('token'); // Obtener el token del localStorage (o sessionStorage)
+                if (!token) {
+                    alert('No se ha encontrado el token de autenticación.');
+                    return;
+                }
+
+                var cursoForm = {
+                    nombre: document.getElementById('nombre').value,
+                    categoriaPrincipal: document.getElementById('categoria').value,
+                    subcategoria: document.getElementById('subcategoria').value
+                };
+
+                fetch('/curso/registrar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token // Añadir el token en el encabezado de la solicitud
+                    },
+                    body: JSON.stringify(cursoForm)
+                })
+                        .then(response => {
+                            if (response.ok) {
+                                window.location.href = "/";
+                            } else {
+                                console.error('Error en el registro del curso:', response.statusText);
+                            }
+                        })
+                        .catch(error => console.error('Error en el registro del curso:', error));
+            }
+
+            // Función para enviar un nuevo tópico
+            function enviarNuevoTopico(event) {
+                event.preventDefault(); // Prevenir el envío del formulario tradicional
+
+                var formData = {
+                    titulo: document.getElementById('titulo').value,
+                    mensaje: document.getElementById('mensaje').value,
+                    cursoId: document.getElementById('cursoId').value
+                };
+
+                fetch('/registrarTopico', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + tokenJWT
+                    },
+                    body: JSON.stringify(formData)
+                })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Error al registrar el tópico');
+                                window.location.href = '/login';
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('Tópico registrado:', data);
+                            window.location.href = '/';
+                        })
+                        .catch(error => {
+                            console.error('Error al registrar el tópico:', error);
+                            window.location.href = '/login';
+                            mostrarMensajeError('Error al registrar el tópico. Por favor, inténtalo nuevamente.');
+                        });
+            }
 
 // Evento que se dispara cuando el DOM está completamente cargado
             document.addEventListener('DOMContentLoaded', function () {
@@ -184,6 +331,12 @@
                                 });
                     });
                 });
+
+                // Asignar la función de envío al formulario
+                var formNuevoTopico = document.getElementById('formNuevoTopico');
+                if (formNuevoTopico) {
+                    formNuevoTopico.addEventListener('submit', enviarNuevoTopico);
+                }
             });
 
 
