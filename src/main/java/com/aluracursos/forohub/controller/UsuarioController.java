@@ -37,20 +37,4 @@ public class UsuarioController {
 
         return ResponseEntity.created(url).body(datosRespuestaUsuario);
     }
-    
-//    @PostMapping("/registrar")
-//    public String registrarUsuario(@ModelAttribute DatosRegistroUsuario datosRegistroUsuario,
-//            RedirectAttributes redirectAttributes) {
-//
-//        Usuario usuario = usuarioService.registrarUsuario(datosRegistroUsuario);
-//
-//        DatosRespuestaUsuario datosRespuestaUsuario = new DatosRespuestaUsuario(
-//                usuario.getNombre(),
-//                usuario.getCorreoElectronico(),
-//                usuario.getPerfil());
-//
-//        redirectAttributes.addFlashAttribute("mensaje", "¡Usuario registrado exitosamente!");
-//
-//        return "redirect:/";
-//    }
 }
