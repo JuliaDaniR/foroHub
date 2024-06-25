@@ -29,32 +29,38 @@ public class TopicoService {
 
     @Autowired
     private IUsuarioRepository usuarioRepository;
+@Transactional
+public Topico registrarTopico(DatosRegistroTopico datosRegistroTopico) {
+    // Verificar si el curso existe
+    Long cursoId = datosRegistroTopico.cursoId();
+    Curso curso = cursoRepository.findById(cursoId)
+            .orElseThrow(() -> new IllegalArgumentException("El curso con ID " + cursoId + " no existe."));
+    System.out.println("Curso encontrado: " + curso);
 
-    @Transactional
-    public Topico registrarTopico(DatosRegistroTopico datosRegistroTopico) {
-        // Verificar si el curso existe
-        Long cursoId = datosRegistroTopico.cursoId();
-        Curso curso = cursoRepository.findById(cursoId)
-                .orElseThrow(() -> new IllegalArgumentException("El curso con ID " + cursoId + " no existe."));
+    // Verificar si el autor existe
+    Long autorId = datosRegistroTopico.autorId();
+    Usuario autor = usuarioRepository.findById(autorId)
+            .orElseThrow(() -> new IllegalArgumentException("El autor con ID " + autorId + " no existe."));
+    System.out.println("Autor encontrado: " + autor);
 
-        System.out.println("cursoId " + cursoId);
-        // Verificar si el autor existe
-        Long autorId = datosRegistroTopico.autorId();
-        Usuario autor = usuarioRepository.findById(autorId)
-                .orElseThrow(() -> new IllegalArgumentException("El autor con ID " + autorId + " no existe."));
-
-        List<Topico> topicos = topicoRepository.findAll();
-        for (Topico topico : topicos) {
-            if (topico.getTitulo().equalsIgnoreCase(datosRegistroTopico.titulo())
-                    && topico.getMensaje().equalsIgnoreCase(datosRegistroTopico.mensaje())) {
-                System.out.println("Ya existe un topico con ese titulo y mensaje");
-                return null; // O puedes lanzar una excepción
-            }
+    // Verificar si ya existe un tópico con el mismo título y mensaje
+    List<Topico> topicos = topicoRepository.findAll();
+    for (Topico topico : topicos) {
+        if (topico.getTitulo().equalsIgnoreCase(datosRegistroTopico.titulo())
+                && topico.getMensaje().equalsIgnoreCase(datosRegistroTopico.mensaje())) {
+            System.out.println("Ya existe un tópico con ese título y mensaje");
+            return null; // O puedes lanzar una excepción
         }
-        // Si no se encuentra ningún tópico con el mismo título y mensaje, crea y guarda uno nuevo
-        Topico nuevoTopico = new Topico(datosRegistroTopico, autor, curso);
-        return topicoRepository.save(nuevoTopico);
     }
+
+    // Si no se encuentra ningún tópico con el mismo título y mensaje, crea y guarda uno nuevo
+    Topico nuevoTopico = new Topico(datosRegistroTopico, autor, curso);
+    Topico topicoGuardado = topicoRepository.save(nuevoTopico);
+    System.out.println("Tópico guardado: " + topicoGuardado);
+
+    return topicoGuardado;
+}
+
 
     private static final Logger logger = LoggerFactory.getLogger(TopicoService.class);
 

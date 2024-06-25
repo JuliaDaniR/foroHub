@@ -1,5 +1,9 @@
 package com.aluracursos.forohub.security;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -26,18 +30,19 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable() // Deshabilitar CSRF para APIs stateless
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Deshabilitar sesiones
-            .and()
-            .authorizeHttpRequests()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Deshabilitar sesiones
+                .and()
+                .authorizeHttpRequests()
                 .requestMatchers(HttpMethod.POST, "/login").permitAll() // Permitir acceso al login
                 .requestMatchers("/css/**", "/js/**", "/img/**", "/**").permitAll() // Permitir acceso a recursos estáticos y al frontend
                 .requestMatchers(HttpMethod.POST, "/usuario/registrar").permitAll() // Permitir registro de usuarios
                 .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**").permitAll() // Permitir acceso a Swagger
-                .requestMatchers("/detalleTopico/**").authenticated() // Requerir autenticación para detalle de tópicos
-                .anyRequest().authenticated() // Requerir autenticación para todas las demás rutas
-            .and()
-            .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class) // Añadir filtro de seguridad personalizado
-            .formLogin().disable(); // Deshabilitar el manejo de formularios de login
+                .requestMatchers("/detalleTopico/**").authenticated()
+                .requestMatchers("/buscarTopicos/**").authenticated()
+                .anyRequest().authenticated()
+                .and()
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class) // Añadir filtro de seguridad personalizado
+                .formLogin().disable(); // Deshabilitar el manejo de formularios de login
 
         return http.build();
     }
@@ -51,4 +56,13 @@ public class SecurityConfiguration {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        mapper.registerModule(new JavaTimeModule());
+        return mapper;
+    }
+
 }

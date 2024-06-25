@@ -56,9 +56,6 @@ public class Usuario implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> authorities = new ArrayList<>();
 
-        // Añadir el rol base para todos los usuarios
-        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-
         // Añadir roles adicionales según el perfil del usuario
         switch (perfil) {
             case ADMINISTRADOR:

@@ -291,6 +291,9 @@ footer {
     box-shadow: 10px 10px 67px 28px rgba(45,47,83,0.75) inset;
     -webkit-box-shadow: 10px 10px 67px 28px rgba(45,47,83,0.75) inset;
     -moz-box-shadow: 10px 10px 67px 28px rgba(45,47,83,0.75) inset;
+    
+}
+#listaRespuestas{
     list-style: none;
 }
 
@@ -398,6 +401,7 @@ footer {
 .input-box input:valid ~ i {
     color: #0ef;
 }
+
 .btn {
     position: relative;
     width: 100%;
@@ -499,7 +503,7 @@ footer {
     margin-top: 3rem;
     width: 40%;
 }
-.mensaje-exito {
+.mensaje-exito, .mensaje-exito-respuesta {
     background-color: #d4edda;
     border-color: #c3e6cb;
     color: #155724;

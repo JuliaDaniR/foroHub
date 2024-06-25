@@ -17,4 +17,8 @@ public class UsuarioService {
         Usuario usuario = new Usuario(datosRegistroUsuario);
         return usuarioRepo.save(usuario);
     }    
+
+    public Usuario obtenerPorCorreoElectronico(String username) {
+       return (Usuario) usuarioRepo.findByCorreoElectronico(username);
+    }
 }

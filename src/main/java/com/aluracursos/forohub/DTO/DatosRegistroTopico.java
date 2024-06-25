@@ -6,9 +6,13 @@ import jakarta.validation.constraints.NotNull;
 public record DatosRegistroTopico(
         @NotBlank(message = "El titulo es obligatorio") String titulo,
         @NotBlank(message = "Debe contener un mensaje") String mensaje,
-        @NotNull Long autorId,
+        Long autorId,
         @NotNull Long cursoId
         ) {
+
+    public void setAutorId(Long idAutor) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 
     public static record DatosActualizarTopico(
             @NotNull Long id,
