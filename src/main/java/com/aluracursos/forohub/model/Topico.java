@@ -41,6 +41,7 @@ public class Topico {
 
     private LocalDateTime fechaCreacion;
     private Boolean status;
+    private Boolean estaSolucionado;
 
     @ManyToOne(fetch = FetchType.EAGER)
     private Usuario autor;
@@ -58,6 +59,7 @@ public class Topico {
         this.autor = autor;
         this.curso = curso;
         this.status = true;
+        this.estaSolucionado = false;
     }
 
     public void actualizarDatos(DatosRegistroTopico.DatosActualizarTopico datosActualizarTopico) {

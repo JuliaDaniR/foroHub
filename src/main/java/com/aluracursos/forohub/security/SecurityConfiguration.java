@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,18 +30,18 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf().disable() // Deshabilitar CSRF para APIs stateless
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Deshabilitar sesiones
-                .and()
-                .authorizeHttpRequests()
+        http.csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para APIs stateless
+                .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Deshabilitar sesiones
+                .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.POST, "/login").permitAll() // Permitir acceso al login
                 .requestMatchers("/css/**", "/js/**", "/img/**", "/**").permitAll() // Permitir acceso a recursos estáticos y al frontend
                 .requestMatchers(HttpMethod.POST, "/usuario/registrar").permitAll() // Permitir registro de usuarios
                 .requestMatchers("/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**").permitAll() // Permitir acceso a Swagger
                 .anyRequest().authenticated()
-                .and()
+                )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class) // Añadir filtro de seguridad personalizado
-                .formLogin().disable(); // Deshabilitar el manejo de formularios de login
+                .formLogin(AbstractHttpConfigurer::disable); // Deshabilitar el manejo de formularios de login
 
         return http.build();
     }
