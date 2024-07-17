@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Foro de Tecnología</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+        <link rel="stylesheet" th:href="@{/css/styles.css}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900&display=swap" rel="stylesheet" />
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    </head>
+    <body>
+        <div class="navbar">
+            <a href="#" class="logo"><i class="fas fa-comments"></i> ForoTech</a>
+            <div class="menu-icon" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="items" id="navbarLinks">
+                <a th:href="@{/login}" id="loginLink">Login</a>
+                <a th:href="@{/registrar}" id="registerLink">Registrar</a>
+            </div>
+        </div>
+        <header>
+            <div class="container">
+                <h1>Bienvenido al Foro de Tecnología</h1>
+                <p>Discute y comparte conocimientos sobre las últimas tendencias en tecnología.</p>
+            </div>
+        </header>
+        <div class="temas">
+            <h2 style="text-align: center; color: darkblue">Tienes que loguearte para poder participar de nuestro foro</h2>
+        </div>
+        <section class="container-login">
+           
+            <div class="wrapper">
+                <span class="bg-animate"></span>
+                <div class="form-box login">
+                    <h2>Login</h2>
+                    <form th:action="@{/login}" method="POST">
+                        <div class="input-box">
+                            <input type="email" name="correoElectronico" required />
+                            <label>Usuario</label>
+                            <i class="bx bxs-user"></i>
+                        </div>
+                        <div class="input-box">
+                            <input type="password" name="password" required />
+                            <label>Password</label>
+                            <i class="bx bxs-lock-alt"></i>
+                        </div>
+                        <button type="submit" class="btn">Ingresar</button>
+                        <div class="logreg-link">
+                            <p>No tienes una cuenta <a th:href="@{/registrar}" class="register-link">Registrate</a></p>
+                        </div>
+                    </form>
+                </div>
+                <div class="info-text login">
+                    <h2>Bienvenido!!</h2>
+                    <p>Ingrese con su usuario y contraseña</p>
+                </div>
+            </div>
+        </section>
+        <footer>
+            <p>&copy; 2024 ForoTech. Todos los derechos reservados.</p>
+        </footer>
+        <script src="/js/login.js"></script>
+    </body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Foro de Tecnología</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+        <link rel="stylesheet" type="text/css" th:href="@{css/styles.css}" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900&display=swap" rel="stylesheet">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    </head>
+    <body>
+        <div class="navbar">
+            <a href="#" class="logo"><i class="fas fa-comments"></i> ForoTech</a>
+            <div class="menu-icon" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="items" id="navbarLinks">
+                <a th:href="@{/login}" id="loginLink">Login</a>
+                <a th:href="@{/registrar}" id="registerLink">Registrar</a>
+            </div>
+        </div>
+        <header>
+            <div class="container">
+                <h1>Bienvenido al Foro de Tecnología</h1>
+                <p>Discute y comparte conocimientos sobre las últimas tendencias en tecnología.</p>
+            </div>
+            <div th:if="${mensaje}" class="mensaje-exito">
+                <p th:text="${mensaje}" style="color: green;"></p>
+            </div>
+        </header>
+        <div class="container">
+            <div class="content">
+                <p>Este es nuestro Foro de Tecnología. Aquí encontrarás una amplia gama de discusiones sobre las últimas tendencias, herramientas y tecnologías emergentes en el mundo de la programación, desarrollo web, aplicaciones móviles, inteligencia artificial, y más. Explora las diversas categorías, descubre las subcategorías específicas y sumérgete en los debates y artículos que nuestra comunidad ha creado. Si tienes dudas, experiencias que compartir o simplemente quieres aprender algo nuevo, estás en el lugar adecuado. ¡Únete a la conversación y enriquece tus conocimientos junto a otros entusiastas de la tecnología!</p>
+                <p>A continuación, selecciona una categoría para ver los temas relacionados:</p>
+            </div>
+        </div>
+        <div id="botones-categorias">
+            <ul>
+                <li th:each="categoria : ${categorias}">
+                    <button class="categoria-btn"
+                            th:text="${categoria.descripcion}"
+                            th:value="${categoria.name()}"
+                            onclick="mostrarSubcategorias(this)">
+                    </button>
+                    <div class="subcategorias" th:id="'subcategorias-' + ${categoria.name()}" style="display: none;">
+                        <form id="form-topicos" th:action="@{/buscarTopicos}" method="GET">
+                            <input type="hidden" name="categoria" th:value="${categoria.name()}"/>
+                            <div th:each="subcategoria : ${categoria.subcategorias}">
+                                <button type="submit" class="subcategoria-btn"
+                                        th:text="${subcategoria}"
+                                        name="subcategoria"
+                                        th:value="${subcategoria}">
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        </div>
+        <div id="contenedor-temas" class="temas" th:if="${topicos != null}">
+            <h2>Temas Relacionados</h2>
+            <ul th:if="${topicos.size() > 0}">
+                <li th:each="tema : ${topicos}" style="list-style: none">
+                    <div class="tema">
+                        <div>
+                            <h3 th:text="${tema.titulo}"></h3>
+                            <p th:text="${tema.mensaje}"></p>
+                        </div>
+                        <div class="derecha">
+                            <div style="margin: 2rem;font-size: 1.7rem;font-weight: 900;color: rebeccapurple;">
+                                <p><span th:text="${#lists.size(tema.respuestas)}"></span></p>
+                            </div>
+                            <div>
+                                <p>Creado por: <span th:text="${tema.autor?.nombre}">Anónimo</span></p>
+                                <a th:href="@{/detalle/{id}(id=${tema.id})}" class="ver-mas-btn">Ver más</a>  
+                            </div>
+                        </div>                     
+                    </div>
+                </li>
+            </ul>
+            <p th:if="${topicos.size() == 0}" class="tema" style="margin: 2rem auto; color: wheat; text-align: center">No hay tópicos para la categoría y subcategoría seleccionadas.</p>
+        </div>
+        <footer>
+            <p>&copy; 2024 ForoTech. Todos los derechos reservados.</p>
+        </footer>
+     <script src="/js/index.js"></script>
+    </body>
+</html>
