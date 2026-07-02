@@ -1,129 +1,332 @@
-# ForoHub API
+# ForoHub 🚀
 
-Bienvenido a la documentación de la API ForoHub, una aplicación RESTful desarrollada con Spring que proporciona funcionalidades completas para gestionar un foro educativo.
+ForoHub es una plataforma educativa tipo foro, ahora refactorizada como aplicación full stack: un **backend REST con Spring Boot** y un **frontend SPA con React + Vite**. Además de la gestión clásica de tópicos, respuestas, usuarios y cursos, incorpora autenticación JWT, migraciones con Flyway, chat global en tiempo real mediante WebSockets, gamificación por puntos y funcionalidades asistidas por IA.
 
-## Descripción
+---
 
-ForoHub es una API diseñada para facilitar la gestión de tópicos, respuestas, usuarios y cursos dentro de un entorno educativo. Utiliza Spring Security para la autenticación basada en tokens JWT y sigue las mejores prácticas de REST para la organización de sus endpoints.
+## Estado del refactor
 
-## Servidores
+El proyecto dejó de ser una aplicación Spring monolítica con vistas estáticas/Thymeleaf y pasó a una arquitectura separada por responsabilidades:
 
-La API se despliega localmente en:
+- `backend/`: API REST, seguridad, persistencia, migraciones, WebSocket e integración con servicios de IA.
+- `frontend/`: interfaz React independiente con Vite, navegación por vistas, temas visuales y consumo de la API.
+- `docker-compose.yml`: orquesta MySQL y el backend para levantar el entorno base.
+- `frontend/public/`: assets públicos de la SPA, como logo y favicon.
+- `backend/src/main/resources/db/migration/`: scripts Flyway para versionar la base de datos.
 
-- Base URL: `http://localhost:8080`
-- Swagger: `http://localhost:8080/swagger-ui/index.html`
-  
-## Autorización
+---
 
-La API requiere autorización mediante tokens JWT para acceder a ciertos endpoints. Consulta la sección de Autenticación para más detalles.
+## Estructura del proyecto
 
-## Tecnologías Utilizadas
+```text
+forohub/
+├── backend/
+│   ├── Dockerfile
+│   ├── pom.xml
+│   ├── mvnw / mvnw.cmd
+│   └── src/
+│       ├── main/java/com/aluracursos/forohub/
+│       │   ├── config/        # CORS y WebSocket/STOMP
+│       │   ├── controller/    # Endpoints REST y mensajería
+│       │   ├── dto/           # Contratos de entrada/salida
+│       │   ├── model/         # Entidades JPA
+│       │   ├── repository/    # Spring Data JPA
+│       │   ├── security/      # JWT y Spring Security
+│       │   └── service/       # Reglas de negocio e IA
+│       └── main/resources/
+│           ├── application.properties
+│           └── db/migration/  # Migraciones Flyway
+├── frontend/
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── public/
+│   └── src/
+│       ├── App.jsx
+│       ├── index.css
+│       └── components/        # Login, dashboard, cursos, chat, tópicos
+├── docker-compose.yml
+└── README.md
+```
 
-- **Spring Boot**: Framework para el desarrollo de aplicaciones Java.
-- **Spring Security**: Manejo de la seguridad y autenticación.
-- **JWT (JSON Web Tokens)**: Para la generación y validación de tokens de acceso.
-- **Spring Data JPA**: Implementación de persistencia de datos utilizando Hibernate.
-- **MySql**: Base de datos para el desarrollo y pruebas.
-- **Swagger/OpenAPI**: Documentación de la API.
-- **Maven**: Gestión de dependencias y construcción del proyecto.
-- **Java 17**: Versión del lenguaje de programación utilizada.
+---
 
-## Endpoints
+## Funcionalidades principales
 
-### Tópicos (`topico-controller`)
+- **Autenticación JWT**: login stateless, registro de usuarios y protección de endpoints privados con bearer token.
+- **Foro educativo**: creación, listado, detalle, actualización, baja lógica y baja definitiva de tópicos y respuestas.
+- **Cursos administrables**: registro, listado paginado, actualización, eliminación lógica, descripción y tags.
+- **Gamificación**: usuarios con puntos y leaderboard para impulsar participación.
+- **Chat global en tiempo real**: WebSocket/STOMP con endpoint `/ws`, prefijo de aplicación `/app` y broker `/topic`.
+- **IA integrada**: generación de borradores de tópicos, resumen de contenido y autocompletado/clasificación de cursos usando Gemini u OpenRouter.
+- **Frontend moderno**: SPA React con vistas de login, registro, dashboard, detalle de tópico, exploración de cursos, estadísticas, chat y temas visuales.
+- **Persistencia versionada**: MySQL + Flyway con migraciones para usuarios, cursos, tópicos, respuestas, puntos, descripciones y tags.
 
-- **Actualizar un tópico**
-  - `PUT /topico/actualizar`
-  - Body: `DatosActualizarTopico`
+---
 
-- **Crear un nuevo tópico**
-  - `POST /topico`
-  - Body: `DatosRegistroTopico`
+## Tecnologías
 
-- **Listar todos los tópicos**
-  - `GET /topico/listar`
-  - Respuesta: `List<PageDatosListadoTopico>`
+### Backend
 
-- **Listar tópicos por curso**
-  - `GET /topico/listarPorCurso`
-  - Parámetros: `cursoId`
-  - Respuesta: `List<PageDatosListadoTopico>`
+- Java 21 configurado en Maven
+- Spring Boot 3.3.0
+- Spring Web
+- Spring Security
+- Spring Data JPA / Hibernate
+- Spring WebSocket + STOMP
+- Flyway
+- MySQL 8
+- Java JWT (`java-jwt`)
+- Springdoc OpenAPI / Swagger UI
+- Lombok
+- Maven
 
-- **Obtener detalles de un tópico por ID**
-  - `GET /topico/detalle/{id}`
-  - Respuesta: `Topico`
+### Frontend
 
-- **Dar de alta un tópico**
-  - `GET /topico/alta/{id}`
+- React 18
+- Vite 5
+- JavaScript / JSX
+- STOMP client (`@stomp/stompjs`)
+- SockJS client
+- CSS personalizado con temas dinámicos
+- ESLint
 
-- **Eliminar un tópico (lógico)**
-  - `DELETE /topico/eliminar/{id}`
+### Infraestructura
 
-- **Eliminar permanentemente un tópico**
-  - `DELETE /topico/baja/{id}`
+- Docker
+- Docker Compose
+- MySQL con volumen persistente
 
-### Respuestas (`respuesta-controller`)
+---
 
-- **Actualizar una respuesta**
-  - `PUT /respuesta/actualizar`
-  - Body: `DatosActualizarRespuestas`
+## Requisitos
 
-- **Registrar una nueva respuesta**
-  - `POST /respuesta/registrar`
-  - Body: `DatosRegistroRespuestas`
+- Java 21 para desarrollo local del backend
+- Maven Wrapper incluido en `backend/`
+- Node.js y npm para el frontend
+- Docker y Docker Compose para levantar MySQL y backend en contenedores
+- MySQL 8 si decides ejecutar la base de datos sin Docker
 
-- **Obtener la solución de una respuesta por ID**
-  - `GET /respuesta/solucion/{id}`
-  - Respuesta: `Respuesta`
+---
 
-- **Listar todas las respuestas**
-  - `GET /respuesta/listar`
-  - Respuesta: `List<PageDatosRespuestaRespuestas>`
+## Configuración
 
-- **Listar respuestas por tópico**
-  - `GET /respuesta/listarPorTopico/{topicoId}`
-  - Respuesta: `List<PageDatosRespuestaRespuestas>`
+El backend lee sus valores desde variables de entorno con defaults de desarrollo:
 
-- **Obtener detalles de una respuesta por ID**
-  - `GET /respuesta/detalle/{id}`
-  - Respuesta: `Respuesta`
+| Variable | Descripción | Valor por defecto |
+|---|---|---|
+| `DB_HOST_FORO` | Host de MySQL | `localhost` |
+| `DB_PORT_FORO` | Puerto de MySQL | `3306` |
+| `DB_NAME_FORO` | Nombre de la base de datos | `foro-hub` |
+| `DB_USER_FORO` | Usuario de MySQL | `root` |
+| `DB_PASSWORD_FORO` | Password de MySQL | vacío |
+| `JWT_SECRET` | Secreto para firmar JWT | clave de desarrollo |
+| `OPENROUTER_API_KEY` | API key de OpenRouter | `mock-key-for-tests` |
+| `GEMINI_API_KEY` | API key de Gemini | `mock-key-for-tests` |
 
-- **Eliminar una respuesta (lógico)**
-  - `DELETE /respuesta/eliminar/{id}`
+En `docker-compose.yml`, MySQL se levanta como `forohub-db` y el backend como `forohub-backend`.
 
-- **Eliminar permanentemente una respuesta**
-  - `DELETE /respuesta/baja/{id}`
+---
 
-### Usuarios (`usuario-controller`)
+## Ejecución con Docker Compose
 
-- **Registrar un nuevo usuario**
-  - `POST /usuario/registrar`
-  - Body: `DatosRegistroUsuario`
+Desde la raíz del proyecto:
 
-### Autenticación (`autenticacion-controller`)
+```bash
+docker-compose up --build
+```
 
-- **Iniciar sesión (login)**
-  - `POST /login`
-  - Body: `DatosAutenticacionUsuario`
-  - Respuesta: `DatosJWTtoken`
+Servicios disponibles:
 
-- **Redirigir después del login**
-  - `GET /login/redirect`
+- Backend/API: `http://localhost:8080`
+- MySQL: `localhost:3306`
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 
-### Cursos (`curso-controller`)
+> El compose actual levanta base de datos y backend. El frontend se ejecuta por separado en modo desarrollo.
 
-- **Registrar un nuevo curso**
-  - `POST /curso/registrar`
-  - Body: `DatosRegistroCurso`
+---
 
-## Seguridad y Autenticación
+## Ejecución local
 
-La API utiliza Spring Security para manejar la autenticación y autorización. Los endpoints protegidos requieren un token JWT válido en el header de autorización.
+### 1. Backend
 
-## Documentación Adicional
+```bash
+cd backend
+./mvnw spring-boot:run
+```
 
-Para una documentación más detallada sobre los parámetros, cuerpos de las peticiones y respuestas de cada endpoint, se puede explorar la documentación Swagger de la API accediendo a `/v3/api-docs`.
+En Windows PowerShell:
 
-## Desarrollado
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run
+```
 
-Este proyecto fue desarrollado por Julia Daniela Rodriguez 
+El backend queda disponible en `http://localhost:8080`.
+
+### 2. Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+La SPA queda disponible normalmente en `http://localhost:5173`. Vite proxy redirige `/login`, `/topico`, `/respuesta`, `/usuario`, `/curso`, `/ai` y `/ws` hacia `http://localhost:8080`.
+
+### 3. Build del frontend
+
+```bash
+cd frontend
+npm run build
+```
+
+---
+
+## Seguridad
+
+Endpoints públicos:
+
+- `POST /login`
+- `POST /usuario/registrar`
+- `/swagger-ui/**`
+- `/v3/api-docs/**`
+- `/ws/**`
+- Assets estáticos básicos
+
+El resto de endpoints requiere header:
+
+```http
+Authorization: Bearer <token>
+```
+
+---
+
+## Endpoints REST
+
+### Autenticación
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/login` | Autentica usuario y devuelve token JWT |
+| `GET` | `/login/redirect` | Redirección posterior al login |
+
+### Usuarios
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/usuario/registrar` | Registra un usuario nuevo |
+| `GET` | `/usuario/leaderboard` | Lista ranking de usuarios por puntos |
+
+### Tópicos
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/topico` | Crea un tópico |
+| `GET` | `/topico/listar` | Lista tópicos paginados |
+| `GET` | `/topico/listarPorCurso` | Lista tópicos filtrados por curso |
+| `GET` | `/topico/detalle/{id}` | Obtiene detalle de un tópico |
+| `PUT` | `/topico/actualizar` | Actualiza un tópico |
+| `DELETE` | `/topico/eliminar/{id}` | Realiza baja lógica |
+| `DELETE` | `/topico/baja/{id}` | Elimina definitivamente |
+| `GET` | `/topico/alta/{id}` | Reactiva un tópico |
+
+### Respuestas
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/respuesta/registrar` | Registra una respuesta |
+| `GET` | `/respuesta/listar` | Lista respuestas paginadas |
+| `GET` | `/respuesta/listarPorTopico/{topicoId}` | Lista respuestas de un tópico |
+| `GET` | `/respuesta/detalle/{id}` | Obtiene detalle de una respuesta |
+| `GET` | `/respuesta/solucion/{id}` | Marca una respuesta como solución |
+| `PUT` | `/respuesta/actualizar` | Actualiza una respuesta |
+| `DELETE` | `/respuesta/eliminar/{id}` | Realiza baja lógica |
+| `DELETE` | `/respuesta/baja/{id}` | Elimina definitivamente |
+
+### Cursos
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/curso/registrar` | Registra un curso |
+| `GET` | `/curso/listar` | Lista cursos paginados |
+| `PUT` | `/curso/actualizar` | Actualiza datos de un curso |
+| `DELETE` | `/curso/eliminar/{id}` | Realiza baja lógica de un curso |
+
+### Inteligencia Artificial
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/ai/generate-topic` | Genera borrador de título/mensaje para un tópico |
+| `POST` | `/ai/summarize` | Resume contenido de un tópico |
+| `POST` | `/ai/autocomplete-course` | Sugiere o clasifica curso/tags según el contenido |
+
+---
+
+## WebSocket / Chat
+
+Configuración STOMP:
+
+- Handshake: `/ws`
+- Prefijo de publicación desde cliente: `/app`
+- Broker de suscripción: `/topic`
+- Chat global: cliente envía a `/app/chat.sendMessage`
+- Broadcast del chat: servidor publica en `/topic/public-chat`
+
+La aplicación también usa canales de notificación para eventos del foro, como nuevos tópicos y respuestas.
+
+---
+
+## Base de datos
+
+Flyway gestiona el esquema con las siguientes migraciones:
+
+- `V1__create_tables.sql`: crea `usuarios`, `cursos`, `topicos` y `respuestas`.
+- `V2__add_user_points.sql`: agrega puntos a usuarios para gamificación.
+- `V3__add_course_details.sql`: agrega descripción y tags a cursos.
+
+Hibernate está configurado con `ddl-auto=validate`, por lo que la estructura esperada debe existir mediante migraciones.
+
+---
+
+## Interfaz frontend
+
+Pantallas/componentes principales:
+
+- `Login` y `Register`: autenticación y alta de usuarios.
+- `Dashboard`: feed principal de tópicos.
+- `CreateTopicModal`: creación asistida de tópicos.
+- `TopicDetail`: detalle de tópico y respuestas.
+- `ExploreCourses` / `ManageCourses`: exploración y gestión de cursos.
+- `StatsDashboard`: estadísticas y gamificación.
+- `GlobalChat`: chat global en tiempo real.
+- `CodeBlock`: renderizado visual de bloques de código.
+
+La UI guarda sesión, usuario, perfil y tema en `localStorage`.
+
+---
+
+## Documentación API
+
+Con el backend en ejecución:
+
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- OpenAPI: `http://localhost:8080/v3/api-docs`
+
+---
+
+## Mejoras visibles del refactor
+
+- Separación clara entre API y cliente web.
+- Migraciones Flyway agregadas para controlar evolución del esquema.
+- Nuevo módulo de IA (`AIController`, `AIService` y DTOs específicos).
+- Nuevo canal WebSocket para chat/notificaciones.
+- Frontend React reemplazando vistas estáticas previas.
+- Docker Compose agregado para levantar infraestructura base.
+
+---
+
+## Autora
+
+Desarrollado por **Julia Daniela Rodriguez**.
+

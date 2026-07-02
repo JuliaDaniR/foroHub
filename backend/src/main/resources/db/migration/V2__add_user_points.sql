@@ -1,0 +1,1 @@
+ALTER TABLE usuarios ADD COLUMN puntos INT DEFAULT 0;

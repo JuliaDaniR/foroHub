@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: forohub-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: foro-hub
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: forohub-backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST_FORO=db
+      - DB_PORT_FORO=3306
+      - DB_NAME_FORO=foro-hub
+      - DB_USER_FORO=root
+      - DB_PASSWORD_FORO=
+      - JWT_SECRET=3f8e6c7104b9015c7e1d52a20b58eef70de5e7dca8dcf7d639b7bf26ff3429fa
+      - OPENROUTER_API_KEY=
+      - GEMINI_API_KEY=
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql-data:

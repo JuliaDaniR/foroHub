@@ -1,0 +1,2 @@
+ALTER TABLE cursos ADD descripcion VARCHAR(500);
+ALTER TABLE cursos ADD tags VARCHAR(255);
